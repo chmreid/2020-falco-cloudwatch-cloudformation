@@ -1,0 +1,50 @@
+Description: >
+  Provides SSM run documents that are useful against EC2 instances in a various Dockstore stacks.
+
+Resources:
+  InstallDockstoreDeployKeyPairSSMDocument:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Name: Install-Dockstore-Deploy-Key-Pair
+      Content:
+        schemaVersion: "2.2"
+        description: "Adds the user needed for security scans and their SSH public key."
+        mainSteps:
+          - action: "aws:runShellScript"
+            name: "createuser"
+            inputs:
+              runCommand:
+                - sudo aws ssm get-parameter --name "/DeployConfig/DockstoreDeployPublicKey" > /home/ubuntu/.ssh/id_rsa_dockstore_deploy.pub
+                - sudo aws ssm get-parameter --name "/DeployConfig/DockstoreDeployPrivateKey" > /home/ubuntu/.ssh/id_rsa_dockstore_deploy
+                - sudo mkdir -p /root/.ssh
+                - sudo chmod 644 /root/.ssh/id_rsa_dockstore_deploy.pub
+                - sudo chmod 600 /root/.ssh/id_rsa_dockstore_deploy
+                - sudo chown root:root /root/.ssh/id_rsa_dockstore_deploy{,.pub}
+                - sudo ssh-add /root/.ssh/id_rsa_dockstore_deploy
+
+
+
+#  SecurityScanUserSSMDocument:
+#    Type: AWS::SSM::Document
+#    Properties:
+#      DocumentType: Command
+#      Name: Dockstore-AddSecurityScanUser
+#      Content:
+#        schemaVersion: "2.2"
+#        description: "Adds the user needed for security scans and their SSH public key."
+#        parameters:
+#          SSHPublicKey:
+#            type: "String"
+#            description: "Public SSH key for the Security Scan user. Leave this as default unless ITS has issued a new SSH key."
+#            default: '{{ssm:/DeploymentConfig/SecurityScanSSHKey}}'
+#        mainSteps:
+#          - action: "aws:runShellScript"
+#            name: "createuser"
+#            inputs:
+#              runCommand:
+#                - sudo adduser secscan1 --disabled-password --gecos 'User for security scans'
+#                - sudo mkdir -p /home/secscan1/.ssh
+#                - sudo printf 'ssh-rsa {{SSHPublicKey}}' > /home/secscan1/.ssh/authorized_keys
+#                - chmod 600 /home/secscan1/.ssh/authorized_keys
+#                - chown secscan1:secscan1 /home/secscan1/.ssh/authorized_keys
