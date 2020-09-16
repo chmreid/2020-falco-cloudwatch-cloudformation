@@ -16,11 +16,16 @@ Resources:
             name: "createuser"
             inputs:
               runCommand:
-                - export DEBIAN_FRONTEND=noninteractive sudo apt-get -y update && sudo apt-get -y install jq
-                - sudo mkdir -p /home/ubuntu/.ssh
+                - DEBIAN_FRONTEND=noninteractive sudo apt-get -y update
+                - sudo apt-get -y install jq
+                - sudo mkdir -p /home/ubuntu/.ssh && echo "SSH dir now exists"
                 - sudo aws ssm get-parameter --name "/DeploymentConfig/DockstoreDeployPublicKey" | jq -r .Parameter.Value > /home/ubuntu/.ssh/id_rsa_dockstore_deploy.pub
+                - test -e /home/ubuntu/.ssh/id_rsa_dockstore_deploy.pub && echo "Successfully got public key from SSM" || echo "Error getting public key from AWS"
                 - sudo aws ssm get-parameter --name "/DeploymentConfig/DockstoreDeployPrivateKey" | jq -r .Parameter.Value > /home/ubuntu/.ssh/id_rsa_dockstore_deploy
-                - sudo chmod 644 /home/ubuntu/.ssh/id_rsa_dockstore_deploy.pub
-                - sudo chmod 600 /home/ubuntu/.ssh/id_rsa_dockstore_deploy
-                - sudo chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa_dockstore_deploy{,.pub}
-                - GIT_SSH_COMMAND='ssh -i /home/ubuntu/.ssh/id_rsa_dockstore_deploy -o IdentitiesOnly=yes' git clone git@github.com:chmreid/dockstore-deploy.git /home/ubuntu/dockstore-deploy
+                - test -e /home/ubuntu/.ssh/id_rsa_dockstore_deploy && echo "Successfully got private key from SSM" || echo "Error getting private key from AWS"
+                - sudo chmod 644 /home/ubuntu/.ssh/id_rsa_dockstore_deploy.pub && echo "Successfully chmodded public key"
+                - sudo chmod 600 /home/ubuntu/.ssh/id_rsa_dockstore_deploy && echo "Successfully chmodded private key"
+                - sudo chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa_dockstore_deploy && echo "Successfully chowned public key"
+                - sudo chown ubuntu:ubuntu /home/ubuntu/.ssh/id_rsa_dockstore_deploy.pub && echo "Successfully chowned private key"
+                - sudo rm -fr /home/ubuntu/dockstore-deploy
+                - GIT_SSH_COMMAND='ssh -i /home/ubuntu/.ssh/id_rsa_dockstore_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=no' git clone git@github.com:chmreid/dockstore-deploy.git /home/ubuntu/dockstore-deploy
