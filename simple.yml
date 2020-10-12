@@ -375,21 +375,6 @@ Resources:
             01_restart_cw:
               command: sudo systemctl restart amazon-cloudwatch-agent
 
-  FalcoRestartSSMCommandDoc:
-    Type: AWS::SSM::Document
-    Properties:
-      Content:
-        schemaVersion: "2.2"
-        description: "Reload the Falco configuration and restart the Falco engine without killing the PID."
-        mainSteps:
-        - action: "aws:runShellScript"
-          name: "reloadfalco"
-          inputs:
-            runCommand:
-              - "kill -1 $(cat /var/run/falco.pid)"
-      DocumentType: Command
-      Name: Falco-Agent-Restart
-
   FalcoLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
