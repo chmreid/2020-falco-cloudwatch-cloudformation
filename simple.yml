@@ -122,15 +122,6 @@ Resources:
                   - logs:DescribeLogStreams
                   - logs:PutLogEvents
                 Resource: "*"
-        - PolicyName: SSMParameterAccess
-          PolicyDocument:
-            Statement:
-              - Effect: Allow
-                Action:
-                  - ssm:DescribeParameters
-                  - ssm:GetParameter
-                  - ssm:GetParameters
-                Resource: "arn:aws:ssm:*:635220370222:parameter//DeployConfig/DockstoreDeploy*"
       ManagedPolicyArns:
       - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
 
